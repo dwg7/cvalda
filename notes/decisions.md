@@ -33,3 +33,23 @@ Base: `https://stars.optgeo.org/bvmap-koicha-hokkaido` (MLT). Supplement: `https
 ## D7: Test area is Niseko (2026-11-21)
 
 hfu chose Niseko as the area to look at in stages 2–3. A second, urban area (Sapporo centre) is still a good contrast; ask hfu if wanted.
+
+## D8: Pages URL is `dwg7.unopengis.org/<repo>/` (2026-11-21)
+
+hfu confirmed. The guide's `dwg7.opengis.org/guide` is not the form to use for cvalda. Expected URL: `https://dwg7.unopengis.org/cvalda/` (not yet published).
+
+## D9: Coverage method and threshold (2026-11-21)
+
+Per-building share of area covered by the union of official polygons (exact clipping). Buildings ≥ 0.95 are dropped in the worker; the rest carry `cov`. The threshold is a page-side filter, default **0.5**, range 5–95%. Reason: measured two-humped distribution; 0.5 is on the flat part (`stage3.md`). This is a measured default for three Niseko blocks, not a proven optimum. This is our own method; it does not copy the Rapid editor's overlap test (its algorithm is unconfirmed).
+
+## D10: Fusion code runs in an inlined Worker (2026-11-21)
+
+`src/fusion.worker.ts` via `?worker&inline`. Dependencies bundled into it: `@maplibre/mlt`, `@mapbox/vector-tile`, `pbf`, `polygon-clipping`. `index.html` grew from 1.69 MB to about 1.83 MB.
+
+## D11: GSI aerial photo under the buildings, off by default (2026-11-21)
+
+`https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg` (checked by curl: 200, `access-control-allow-origin: *`; tiles z16 and z18 answered). maxzoom set to 18. Building fills are translucent (opacity 0.6) so the photo shows through. Default off, to keep the first view simple (hfu asked for "not too much information"). Terms for the photo (GSI content terms) were not read; credit text is "国土地理院シームレス空中写真" with a link. To confirm with hfu.
+
+## D12: Attribution of the computed layer (2026-11-21)
+
+The Overture additions are a GeoJSON source. A hidden vector source shows no attribution, so the OSM/Overture text (copied from the Overture TileJSON) is set on the GeoJSON source itself. Checked in the page.

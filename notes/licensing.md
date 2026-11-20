@@ -17,3 +17,8 @@ I am not giving a legal conclusion here. These are the questions, with what the 
 ## Rule used in code until answered
 
 Show both attributions on the map. Put a plain "source" field on every exported feature. Do not claim a licence for the exported file.
+
+## Added in stage 3
+
+- GSI aerial photo (seamlessphoto) is now an optional layer. Credit shown: 国土地理院シームレス空中写真, linked to maps.gsi.go.jp. The GSI terms of use for this tile set were not read. Question for hfu: is that credit text enough?
+- The page now computes a derived view (Overture buildings not covered by GSI buildings). Nothing is saved. Stage 5 (export) is where the notice for a mixed file matters.

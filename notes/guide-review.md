@@ -12,7 +12,7 @@ Read: `AGENTS.md`, `README.md`, `CONTRIBUTIONS.md`, `docs/dwg7-in-5-minutes.md`,
 
 ## Observations on the guide itself (for hfu to judge)
 
-1. **Public URL differs between sources.** The guide says `https://dwg7.opengis.org/guide`. cafebabe's patterns and PROJECTS.md use `dwg7.unopengis.org/<repo>/`. I did not check which is live. cvalda's Pages URL is therefore **unknown** until hfu confirms.
+1. **Public URL differs between sources.** The guide says `https://dwg7.opengis.org/guide`. cafebabe's patterns and PROJECTS.md use `dwg7.unopengis.org/<repo>/`. hfu confirmed on 2026-11-21 that `dwg7.unopengis.org/<repo>/` is correct. cvalda's expected URL is `https://dwg7.unopengis.org/cvalda/`.
 2. The guide asks for a `docs/_layouts` and Jekyll, with `.md` pages. cvalda's `docs/` is a Vite output with `.nojekyll`. That differs on purpose (single-file app), and the two kinds of repository need different notes on onboarding. The guide does not say how an app repository like cvalda should join (location, PROJECTS.md, Pages). **Questions for the guide agent, still unasked:** where do app repositories register, and is the Pages source `main:/docs` for them too?
 3. `CONTRIBUTIONS.md` asks each experiment to be run by its author before it is added, with date and environment. cvalda has no experiment page yet. A candidate "good first experiment" from this project: repeat `scripts/compare-tiles.mjs` for another town and post the table. Not written; offered only as a suggestion.
 4. The guide's claims carry check dates of 2026-11-11, ten days before this read. A fresh check of the issue counts was not done.

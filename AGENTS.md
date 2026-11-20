@@ -34,7 +34,9 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Decisions (details in `notes/decisions.md`)
 
 - Pinned: Vite 8, vite-plugin-singlefile, MapLibre GL JS 6.19.0, pmtiles 4.5.0.
-- MapLibre v6 worker is inlined as a blob and passed to `setWorkerUrl` (D2). Own workers: `?worker&inline` (D3).
+- MapLibre v6 worker is inlined as a blob and passed to `setWorkerUrl` (D2). Own workers: `?worker&inline` (D3, D10).
+- Fusion: per-building covered share, exact clipping, in a Worker; threshold is a page filter, default 0.5 (D9, `notes/stage3.md`).
+- GSI aerial photo toggle, translucent fills (D11).
 - `import * as maplibregl from 'maplibre-gl'` (no default export in v6).
 - LICENSE (CC0) pre-existed; hfu confirmed on 2026-11-21 that CC0 for the site content is intended (D5).
 
@@ -53,12 +55,15 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 
 ## Status
 
-- Stage 1: done. Stage 2 (light mode, Niseko): implemented and checked locally; see `notes/stage2.md`. Waiting for hfu's review of the look and of the slivers. Stage 3 not started.
+- Stage 1 and 2: done; hfu said the look is good (2026-11-21). Stage 3 (browser computation core): implemented and checked locally; see `notes/stage3.md`. Waiting for hfu's review. Stages 4–6 not started.
 - cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu
 
 1. GSI attribution wording; mixed-export licence notice (`notes/licensing.md`).
-2. Pages URL: `dwg7.opengis.org/guide` vs `dwg7.unopengis.org/<repo>/` (see `notes/guide-review.md`); which is right for cvalda?
+2. GSI aerial photo credit/terms (D11).
+3. Is a default threshold of 0.5 acceptable after you look at Niseko? (`notes/stage3.md`)
+
+Decided: Pages URL form is `dwg7.unopengis.org/<repo>/` (D8).
 
 Decided: test area for stage 2/3 is **Niseko** (hfu, 2026-11-21).

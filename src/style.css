@@ -10,6 +10,10 @@ body { font: 14px/1.4 system-ui, sans-serif; }
 .swatch { width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid; flex: none; }
 .swatch.official { background: #0072b2; border-color: #004b73; }
 .swatch.overture { background: #e69f00; border-color: #8a5f00; }
+.swatch.raw { background: transparent; border-color: #8a5f00; border-style: dashed; }
+.slider { margin: 8px 0 2px; }
+.slider label { display: block; margin: 0 0 2px; }
+.slider input { width: 100%; }
 .panel .hint { margin: 6px 0 0; color: #444; font-size: 12px; }
 .panel .places { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .panel button { font: inherit; padding: 2px 8px; border: 1px solid #888; border-radius: 4px; background: #fff; cursor: pointer; }
@@ -19,6 +23,10 @@ body { font: 14px/1.4 system-ui, sans-serif; }
   .panel { background: rgba(32, 32, 36, 0.94); color: #eee; }
   .panel button { background: #333; color: #eee; border-color: #777; }
   .panel button:hover { background: #444; }
-  .panel .hint { color: #bbb; }
+  .swatch.raw { background: transparent; border-color: #8a5f00; border-style: dashed; }
+.slider { margin: 8px 0 2px; }
+.slider label { display: block; margin: 0 0 2px; }
+.slider input { width: 100%; }
+.panel .hint { color: #bbb; }
   #zoomhint { color: #ffb066; }
 }

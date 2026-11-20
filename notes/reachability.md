@@ -16,3 +16,9 @@ Notes:
 - CORS on stars reflects the `Origin` header. `curl` without `Origin` shows no CORS header. Test with `-H "Origin: ..."`.
 - Not yet tested: browser `fetch` from `https://dwg7.unopengis.org/cvalda/` (the future Pages origin). Localhost worked.
 - The URLs above were given by hfu in chat on 2026-11-21 (`bvmap-koicha-hokkaido`, `overture_buildings`, `bvmap`). hfu called the Overture one a "style.json", but it is a TileJSON (not a style).
+
+Added 2026-11-21 (stage 3):
+
+| Host / URL | Result |
+|---|---|
+| `https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg` (z16, z18 tiles near Niseko) | 200, `image/jpeg`, `access-control-allow-origin: *`; also loaded in the page |
