@@ -24,8 +24,12 @@ Tested with a small ping/pong worker: build output has no `new Worker(new URL(..
 
 ## D5: LICENSE (2026-11-21)
 
-The repository already had a `LICENSE` (CC0 1.0) from the initial commit. I did not add or change it. The startup prompt says to ask hfu before placing a licence. **Open question for hfu:** is CC0 for this code intended?
+The repository already had a `LICENSE` (CC0 1.0) from the initial commit. I did not add or change it. The startup prompt says to ask hfu before placing a licence. hfu confirmed on 2026-11-21: CC0 for the site content is intended.
 
 ## D6: Data sources (2026-11-21)
 
 Base: `https://stars.optgeo.org/bvmap-koicha-hokkaido` (MLT). Supplement: `https://stars.optgeo.org/overture_buildings` (MVT, maxzoom 14). Reference for checks: `https://stars.optgeo.org/bvmap` and the GSI pmtiles. See `p0-measurements.md`.
+
+## D7: Test area is Niseko (2026-11-21)
+
+hfu chose Niseko as the area to look at in stages 2–3. A second, urban area (Sapporo centre) is still a good contrast; ask hfu if wanted.

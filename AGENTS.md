@@ -36,7 +36,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 - Pinned: Vite 8, vite-plugin-singlefile, MapLibre GL JS 6.19.0, pmtiles 4.5.0.
 - MapLibre v6 worker is inlined as a blob and passed to `setWorkerUrl` (D2). Own workers: `?worker&inline` (D3).
 - `import * as maplibregl from 'maplibre-gl'` (no default export in v6).
-- LICENSE (CC0) pre-existed; hfu to confirm (D5).
+- LICENSE (CC0) pre-existed; hfu confirmed on 2026-11-21 that CC0 for the site content is intended (D5).
 
 ## Data (measured 2026-11-21; see `notes/p0-measurements.md`)
 
@@ -54,11 +54,11 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Status
 
 - Stage 1: done except hfu's review (see report). Stage 2 not started.
-- cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). The `guide` agent has **not** been consulted yet (the prompt asks for it once); no session with that name was found in the session list.
+- cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: hfu renamed the session, but a retry on 2026-11-21 still failed (`SendMessage` to `guide`: "No agent named 'guide' is reachable"; not in `ListAgents` or the session list). **Not consulted yet.**
 
 ## Open questions for hfu
 
-1. LICENSE: CC0 OK?
-2. GSI attribution wording; mixed-export licence notice (`notes/licensing.md`).
-3. Rural vs urban test areas for stage 2/3: which places do you want to check?
-4. Which agent/session is "guide"?
+1. GSI attribution wording; mixed-export licence notice (`notes/licensing.md`).
+2. `guide` session is not reachable (see Status).
+
+Decided: test area for stage 2/3 is **Niseko** (hfu, 2026-11-21).
