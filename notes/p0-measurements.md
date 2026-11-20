@@ -51,3 +51,18 @@ Measured on a 512×512 raster per z16 tile; Overture taken from the z14 ancestor
 
 - Hidden browser pane → `requestAnimationFrame` stops → MapLibre style never finishes loading. Looks like a code bug but is not. Show the pane (`show_pane preview`) before testing.
 - GeoParquet: not looked for in this stage. Not needed yet (§4.4 of the startup prompt).
+
+## Niseko (added 2026-11-21, same method as section 4)
+
+Chosen by hfu as the area to look at. Centres are approximate; each row is a 2×2 block of z16 tiles. (`scripts/compare-tiles.mjs`)
+
+| Place | official BldA per tile | Overture in tile | overture⊂official | official⊂overture |
+|---|---|---|---|---|
+| Hirafu (42.8627, 140.6988) | 8–144 | 3–133 | 0.63–0.89 | 0.73–0.84 |
+| Niseko station (42.8035, 140.6797) | 0–79 | 2–143 | **0.00–0.50** | 0.00–0.55 |
+| Kutchan (42.9017, 140.7597) | 304–347 | 302–355 | 0.69–0.84 | 0.90–0.97 |
+| Farmland west (42.83, 140.62) | 0–8 | 0–19 | 0.00–0.16 | 0.00–0.22 |
+
+- Niseko station: in one tile the official layer has 79 buildings and Overture has 143. This is the clearest "official lacks buildings" case seen so far. The area ratio there is 0.30.
+- In the farmland block most tiles have almost no buildings in either source.
+- Check by eye in stage 2: the Overture-only buildings at Niseko station and Hirafu look like real buildings in the map view, but this has not been checked against imagery.

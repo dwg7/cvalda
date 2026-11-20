@@ -53,12 +53,12 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 
 ## Status
 
-- Stage 1: done except hfu's review (see report). Stage 2 not started.
-- cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: hfu renamed the session, but a retry on 2026-11-21 still failed (`SendMessage` to `guide`: "No agent named 'guide' is reachable"; not in `ListAgents` or the session list). **Not consulted yet.**
+- Stage 1: done. Stage 2 (light mode, Niseko): implemented and checked locally; see `notes/stage2.md`. Waiting for hfu's review of the look and of the slivers. Stage 3 not started.
+- cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu
 
 1. GSI attribution wording; mixed-export licence notice (`notes/licensing.md`).
-2. `guide` session is not reachable (see Status).
+2. Pages URL: `dwg7.opengis.org/guide` vs `dwg7.unopengis.org/<repo>/` (see `notes/guide-review.md`); which is right for cvalda?
 
 Decided: test area for stage 2/3 is **Niseko** (hfu, 2026-11-21).
