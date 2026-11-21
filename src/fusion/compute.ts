@@ -99,3 +99,50 @@ export const computeTile = async (x: number, y: number, src: Sources): Promise<T
   }
   return { ...base, ms: Date.now() - t0 };
 };
+
+
+export interface ExportTile {
+  x: number;
+  y: number;
+  /** Every Overture building owned by this tile. `covered_share` = share covered by official. */
+  overture: GeoJSON.Feature[];
+  /** Every official building piece of this tile. `covered_share` = share covered by Overture. */
+  official: GeoJSON.Feature[];
+  skipped?: 'too-many';
+}
+
+/** Same method as computeTile, but nothing is dropped. Used only when the reader exports. */
+export const exportTile = async (x: number, y: number, src: Sources): Promise<ExportTile> => {
+  const ov = (await src.overture(x >> 2, y >> 2)).map((b) => ({ ...b, polys: b.polys.map((p) => p.map((r) => r.map(([a, b2]) => [a * SCALE, b2 * SCALE] as [number, number]))) }));
+  const mine = ov.filter((b) => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const p of b.polys) {
+      const bb = polyBBox(p);
+      x0 = Math.min(x0, bb[0]); y0 = Math.min(y0, bb[1]); x1 = Math.max(x1, bb[2]); y1 = Math.max(y1, bb[3]);
+    }
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    return cx >= x && cx < x + 1 && cy >= y && cy < y + 1;
+  });
+  const out: ExportTile = { x, y, overture: [], official: [] };
+  if (mine.length > MAX_FEATURES_PER_TILE) return { ...out, skipped: 'too-many' };
+  const tiles: Promise<Poly[]>[] = [];
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) tiles.push(src.official(x + dx, y + dy));
+  const officialIdx: Indexed[] = index((await Promise.all(tiles)).flat());
+  const round = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 1000);
+  for (const b of mine) {
+    out.overture.push({
+      type: 'Feature',
+      properties: { source: 'overture', id: b.id, ...(b.height !== undefined ? { height: b.height } : {}), datasets: b.datasets, covered_share: round(coveredShare(b.polys, officialIdx)) },
+      geometry: b.polys.length === 1 ? { type: 'Polygon', coordinates: toLonLat(b.polys[0]) } : { type: 'MultiPolygon', coordinates: b.polys.map(toLonLat) },
+    });
+  }
+  const ovIdx: Indexed[] = index(ov.flatMap((b) => b.polys));
+  for (const p of await src.official(x, y)) {
+    out.official.push({
+      type: 'Feature',
+      properties: { source: 'official', covered_share: round(coveredShare([p], ovIdx)) },
+      geometry: { type: 'Polygon', coordinates: toLonLat(p) },
+    });
+  }
+  return out;
+};

@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "flatgeobuf": "4.6.1",
     "maplibre-gl": "6.19.0",
     "pmtiles": "4.5.0",
     "polygon-clipping": "0.15.7"

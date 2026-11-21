@@ -38,6 +38,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 - Fusion: per-building covered share, exact clipping, in a Worker; threshold is a page filter, default 0.5 (D9, `notes/stage3.md`).
 - GSI aerial photo toggle, translucent fills (D11).
 - Three modes with origin colours (D14, D15).
+- Export (D16, D17): GeoJSON and FlatGeobuf of the tiles in view; collapsible panel (D18).
 - No building layer below map zoom 15, because koicha `BldA` is thinned at z13–14 (D13; hfu decided). URL position: `hash: 'map'`.
 - `import * as maplibregl from 'maplibre-gl'` (no default export in v6).
 - LICENSE (CC0) pre-existed; hfu confirmed on 2026-11-21 that CC0 for the site content is intended (D5).
@@ -58,13 +59,13 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Status
 
 - Stages 1–3 released: PR #1 merged; Pages live at `https://dwg7.unopengis.org/cvalda/` and checked (`notes/reachability.md`).
-- Stage 4 (three modes): implemented and checked locally on branch `claude/cvalda-stage4`; see `notes/stage4.md`. Not pushed. Waiting for hfu's review. Stages 5–6 not started.
+- Stage 4 (three modes): released (PR #2 merged); Pages checked (`notes/reachability.md`). Stage 5 (export in GeoJSON and FlatGeobuf, collapsible panel): implemented and checked locally on branch `claude/cvalda-stage5`; see `notes/stage5.md`. Not pushed. Stage 6 (re-joining at tile edges) not started.
 - cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu
 
 1. GSI attribution wording; mixed-export licence notice (`notes/licensing.md`).
-2. GSI aerial photo credit/terms (D11).
+2. (Resolved 2026-11-21) GSI aerial photo credit: matches the tile list rules (`notes/licensing.md`).
 3. Is a default threshold of 0.5 acceptable after you look at Niseko? (`notes/stage3.md`)
 
 Decided: Pages URL form is `dwg7.unopengis.org/<repo>/` (D8).
