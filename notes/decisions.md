@@ -53,3 +53,10 @@ Per-building share of area covered by the union of official polygons (exact clip
 ## D12: Attribution of the computed layer (2026-11-21)
 
 The Overture additions are a GeoJSON source. A hidden vector source shows no attribution, so the OSM/Overture text (copied from the Overture TileJSON) is set on the GeoJSON source itself. Checked in the page.
+
+## D13: Overture appears only from zoom 15; position in the URL uses MapLibre's `hash: 'map'` (2026-11-21)
+
+- hfu's concern: at shallow zooms, a layer that shows Overture buildings while the base map shows few buildings sends a wrong message. Measured: koicha `BldA` at z13–14 holds about 15–20% of z16's area (`p0-measurements.md`).
+- Decision: the official layer stays on from zoom 13 (it is the official map's own depiction; the status line says it is thinned below 15). Overture additions and the "all Overture outlines" toggle start at zoom 15, where the official layer is complete and the computation runs. Below 13 no building layer is drawn.
+- Not decided (hfu's call): hide the official `BldA` below 15 as well, so that no building appears until the data is complete. Current behaviour keeps what the official tiles contain.
+- URL: `hash: 'map'` replaces the custom `lon/lat/z` parameters. Format: `#map=zoom/lat/lng`. Without a hash the map starts at Niseko station, zoom 16. Checked: the hash follows panning and the place buttons.

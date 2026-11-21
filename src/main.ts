@@ -15,8 +15,11 @@ maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([workerSource], { type: 'te
 const STYLE_URL = 'https://stars.optgeo.org/style/bvmap-koicha-starlight';
 const OVERTURE_URL = 'https://stars.optgeo.org/overture_buildings';
 const PHOTO_URL = 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg';
-const MIN_ZOOM = 13; // koicha BldA starts at tile zoom 13 (notes/p0-measurements.md)
-const COMPUTE_MIN_ZOOM = 15; // compute only near the finest zoom
+const MIN_ZOOM = 13; // koicha BldA starts at tile zoom 13 (TileJSON)
+// Below 15 the official BldA is thinned (z13/z14 hold about 15–20% of the area of z16; z15 equals z16,
+// see notes/p0-measurements.md). Overture additions are drawn and computed only from 15, so that a
+// shallow view never shows Overture buildings next to an incomplete official layer.
+const COMPUTE_MIN_ZOOM = 15;
 const MAX_VIEW_TILES = 48; // z16 tiles per view; above this we ask the reader to zoom in
 const MAX_RESULT_TILES = 240; // computed tiles kept in memory
 const FILL_OPACITY = 0.6;
@@ -41,15 +44,15 @@ async function buildStyle(): Promise<maplibregl.StyleSpecification> {
   const rest = style.layers.filter((l) => !isBuilding(l));
   const mine: Layer[] = [
     { id: 'cvalda-photo', type: 'raster', source: 'photo', layout: { visibility: 'none' } },
-    { id: 'cvalda-added-fill', type: 'fill', source: 'added', minzoom: MIN_ZOOM, filter: ['<', ['get', 'cov'], 0.5],
+    { id: 'cvalda-added-fill', type: 'fill', source: 'added', minzoom: COMPUTE_MIN_ZOOM, filter: ['<', ['get', 'cov'], 0.5],
       paint: { 'fill-color': OVERTURE.fill, 'fill-opacity': FILL_OPACITY } },
-    { id: 'cvalda-added-line', type: 'line', source: 'added', minzoom: MIN_ZOOM, filter: ['<', ['get', 'cov'], 0.5],
+    { id: 'cvalda-added-line', type: 'line', source: 'added', minzoom: COMPUTE_MIN_ZOOM, filter: ['<', ['get', 'cov'], 0.5],
       paint: { 'line-color': OVERTURE.line, 'line-width': 0.8 } },
     { id: 'cvalda-official-fill', type: 'fill', source: sourceId, 'source-layer': 'BldA', minzoom: MIN_ZOOM,
       paint: { 'fill-color': OFFICIAL.fill, 'fill-opacity': FILL_OPACITY } },
     { id: 'cvalda-official-line', type: 'line', source: sourceId, 'source-layer': 'BldA', minzoom: MIN_ZOOM,
       paint: { 'line-color': OFFICIAL.line, 'line-width': 0.8 } },
-    { id: 'cvalda-raw-line', type: 'line', source: 'overture', 'source-layer': 'building', minzoom: MIN_ZOOM,
+    { id: 'cvalda-raw-line', type: 'line', source: 'overture', 'source-layer': 'building', minzoom: COMPUTE_MIN_ZOOM,
       layout: { visibility: 'none' }, paint: { 'line-color': OVERTURE.line, 'line-width': 1, 'line-dasharray': [2, 2] } },
   ];
   style.layers = [...rest.slice(0, at), ...mine, ...rest.slice(at)];
@@ -67,13 +70,14 @@ async function buildStyle(): Promise<maplibregl.StyleSpecification> {
   return style;
 }
 
-const params = new URLSearchParams(location.hash.slice(1));
+// Without a `#map=zoom/lat/lng` in the URL, the map starts at Niseko station (hfu's test area).
 const start = PLACES['Niseko station'];
 const map = new maplibregl.Map({
   container: 'map',
   style: await buildStyle(),
-  center: [Number(params.get('lon')) || start[0], Number(params.get('lat')) || start[1]],
-  zoom: Number(params.get('z')) || start[2],
+  center: [start[0], start[1]],
+  zoom: start[2],
+  hash: 'map',
 });
 map.addControl(new maplibregl.NavigationControl());
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }));
@@ -142,7 +146,7 @@ const lat2y = (lat: number) => {
 const statusEl = document.getElementById('status')!;
 function showStatus() {
   if (map.getZoom() < MIN_ZOOM) { statusEl.textContent = `Zoom in to level ${MIN_ZOOM} or more to see buildings.`; return; }
-  if (map.getZoom() < COMPUTE_MIN_ZOOM) { statusEl.textContent = `Zoom in to level ${COMPUTE_MIN_ZOOM} or more to add Overture buildings.`; return; }
+  if (map.getZoom() < COMPUTE_MIN_ZOOM) { statusEl.textContent = `Official buildings are thinned at this zoom. Zoom in to level ${COMPUTE_MIN_ZOOM} or more to add Overture buildings.`; return; }
   if (lastNote) { statusEl.textContent = lastNote; return; }
   let done = 0, cand = 0, dropped = 0, kept = 0, skipped = 0;
   for (const k of viewKeys) {

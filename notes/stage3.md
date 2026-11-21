@@ -16,7 +16,7 @@ Date: 2026-11-21. Code: `src/fusion/{geom,decode,compute}.ts`, `src/fusion.worke
 
 | Item | Value | Where |
 |---|---|---|
-| Compute from map zoom | 15 | `COMPUTE_MIN_ZOOM` |
+| Compute and draw additions from map zoom | 15 (official `BldA` is thinned below 15, D13) | `COMPUTE_MIN_ZOOM` |
 | z16 tiles per view | 48 (above this: ask the reader to zoom in) | `MAX_VIEW_TILES` |
 | Overture buildings per z16 tile | 2,000 (above: tile skipped, shown in the status line) | `MAX_FEATURES_PER_TILE` |
 | Decoded z14 Overture tiles in the worker | 6 | `OVERTURE_CACHE` |

@@ -66,3 +66,18 @@ Chosen by hfu as the area to look at. Centres are approximate; each row is a 2×
 - Niseko station: in one tile the official layer has 79 buildings and Overture has 143. This is the clearest "official lacks buildings" case seen so far. The area ratio there is 0.30.
 - In the farmland block most tiles have almost no buildings in either source.
 - Check by eye in stage 2: the Overture-only buildings at Niseko station and Hirafu look like real buildings in the map view, but this has not been checked against imagery.
+
+## koicha `BldA` is thinned at z13 and z14 (added 2026-11-21)
+
+Compared one tile with the sum of its z16 descendants (feature count and total area; area adds up even when polygons are cut at tile edges). Script: `scripts/zoom-levels.mjs`. Two places (Kutchan, Niseko station).
+
+| Tile zoom | Kutchan: tile n / z16 sum n, area ratio | Niseko station: tile n / z16 sum n, area ratio |
+|---|---|---|
+| z13 | 17 / 2,500, 0.14 | 11 / 1,086, 0.14 |
+| z14 | 25 / 2,211, 0.18 | 17 / 539, 0.22 |
+| z15 | 1,141 / 1,141, 1.00 | 32 / 32, 1.00 |
+
+- At z13 and z14 the official layer holds only a small share of the buildings (14–22% of the area here). At z15 it equals z16 (same count and area).
+- So the TileJSON `minzoom 13` for `BldA` is a **tile existence** fact, not a completeness fact. The official layer is complete from z15.
+- Two places only. Other zoom levels (z4–z12 have no `BldA`) and other regions were not measured.
+- Consequence for the page: Overture additions are drawn and computed only from map zoom 15 (D13).
