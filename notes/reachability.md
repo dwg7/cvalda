@@ -31,3 +31,13 @@ Added 2026-11-21 (stage 3):
 - From the page origin `https://dwg7.unopengis.org`, `fetch` returned 200 for: the koicha TileJSON and a koicha z16 tile, an Overture z14 tile, the published style, and a seamlessphoto tile. So **CORS works from the Pages origin** for all four hosts' resources used.
 - The Browser pane was in the background, so `requestAnimationFrame` was stalled (`map.loaded()` stayed false). The data and rendered-feature counts above come from queries, not from looking at the screen. A look at the live page by hfu is still worth doing.
 - The HTTPS certificate covers `dwg7.unopengis.org` (approved, expires 2027-02-03, from the Pages API). `https_enforced` is false.
+
+## After release 2 (stage 4, PR #2 merged; checked 2026-11-21)
+
+- Pages build for `main` (commit c4a5491): `built`. `https://dwg7.unopengis.org/cvalda/` returned 200, 1,831,826 bytes, byte-identical to `main:docs/index.html`.
+- Opened in the Browser pane (visible, `requestAnimationFrame` running) at `https://dwg7.unopengis.org/cvalda/#map=17.2/42.804/140.684`: three mode radio buttons; no console errors.
+- Mode 1: "Overture buildings in view: 576. Added: 481. … covers 95% or more: 9." Same numbers as the local run.
+- Mode 2 (overlay): official and Overture features rendered, slider hidden.
+- Mode 3: "GSI building pieces in view: 391. Added: 314. … covers 95% or more: 7." Same numbers as the local run.
+- Rendered-feature counts differ from the local run (e.g. 58 vs 110 official) because the pane was a different size; the status-line counts, which cover the tiles of the view, match.
+- Not looked at by eye in this check; no screenshot was taken of the live page.
