@@ -64,7 +64,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Open questions for hfu
 
 1. GSI attribution wording; mixed-export licence notice (`notes/licensing.md`).
-2. GSI aerial photo credit/terms (D11).
+2. (Resolved 2026-11-21) GSI aerial photo credit: matches the tile list rules (`notes/licensing.md`).
 3. Is a default threshold of 0.5 acceptable after you look at Niseko? (`notes/stage3.md`)
 
 Decided: Pages URL form is `dwg7.unopengis.org/<repo>/` (D8).

@@ -48,7 +48,7 @@ Per-building share of area covered by the union of official polygons (exact clip
 
 ## D11: GSI aerial photo under the buildings, off by default (2026-11-21)
 
-`https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg` (checked by curl: 200, `access-control-allow-origin: *`; tiles z16 and z18 answered). maxzoom set to 18. Building fills are translucent (opacity 0.6) so the photo shows through. Default off, to keep the first view simple (hfu asked for "not too much information"). Terms for the photo (GSI content terms) were not read; credit text is "国土地理院シームレス空中写真" with a link. To confirm with hfu.
+`https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg` (checked by curl: 200, `access-control-allow-origin: *`; tiles z16 and z18 answered). maxzoom set to 18. Building fills are translucent (opacity 0.6) so the photo shows through. Default off, to keep the first view simple (hfu asked for "not too much information"). Terms read on 2026-11-21 (see `licensing.md`): credit-only for live loading; our credit text "国土地理院シームレス空中写真" with a link to the tile list page matches.
 
 ## D12: Attribution of the computed layer (2026-11-21)
 
