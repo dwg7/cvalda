@@ -44,7 +44,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Data (measured 2026-11-21; see `notes/p0-measurements.md`)
 
 - Base: `https://stars.optgeo.org/bvmap-koicha-hokkaido`: MLT, z4–16, `BldA` z13–16, extent 8192, fields `vt_code`, `vt_lvorder`.
-- Supplement: `https://stars.optgeo.org/overture_buildings`: MVT, **maxzoom 14** (z15+ is 404), layer `building`, extent 4096, has `id`, `height`, `sources`. Tiles have a buffer and the same `id` appears in neighbouring tiles → dedupe by `id`.
+- Supplement: `https://stars.optgeo.org/overture_buildings`: MVT, **maxzoom 14** (z15+ is 404), layer `building`, extent 4096, has `id`, `height`, `sources`. Tiles have a buffer and the same `id` appears in neighbouring tiles. The code does not dedupe by `id`: a z16 tile owns the buildings whose bounding-box centre lies in it (D9, `notes/stage3.md`).
 - Reference: `https://stars.optgeo.org/bvmap` (MVT, whole Japan), GSI pmtiles.
 - At z16, koicha `BldA` equals official `BldA` in all tiles tested (21 tiles, 5 places).
 - stars caches 4 hours. CORS reflects `Origin`.
@@ -56,7 +56,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 
 ## Status
 
-- Stage 1 and 2: done; hfu said the look is good (2026-11-21). Stage 3 (browser computation core): implemented and checked locally; see `notes/stage3.md`. Waiting for hfu's review. Stages 4–6 not started.
+- Stages 1–3: done (hfu reviewed the look; threshold default 0.5 accepted by implication, not stated). See `notes/stage3.md`. Release 1 (PR from `claude/cvalda-startup-9e46f6` into `main`) is waiting for hfu to merge; Pages (`main:/docs`) is already enabled. After the merge: check the Pages URL, CORS from the Pages origin, and the `#map=` link. Stages 4–6 not started.
 - cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu
