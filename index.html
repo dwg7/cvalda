@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>cvalda</title>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div class="panel">
+      <h1>cvalda</h1>
+      <label><input type="checkbox" id="t-official" checked /><span class="swatch official"></span>GSI building (official)</label>
+      <label><input type="checkbox" id="t-added" checked /><span class="swatch overture"></span>Overture building added</label>
+      <label><input type="checkbox" id="t-raw" /><span class="swatch raw"></span>All Overture outlines (to compare)</label>
+      <label><input type="checkbox" id="t-photo" />GSI aerial photo</label>
+      <div class="slider">
+        <label for="thr">Add an Overture building when official covers less than <b id="thr-val">50%</b> of it</label>
+        <input type="range" id="thr" min="5" max="95" step="5" value="50" />
+      </div>
+      <p class="hint" id="status"></p>
+      <div class="places" id="places"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
