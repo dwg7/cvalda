@@ -59,7 +59,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Status
 
 - Stages 1–3 released: PR #1 merged; Pages live at `https://dwg7.unopengis.org/cvalda/` and checked (`notes/reachability.md`).
-- Stage 4 (three modes): released (PR #2 merged); Pages checked (`notes/reachability.md`). Stage 5 (export in GeoJSON and FlatGeobuf, collapsible panel): implemented and checked locally on branch `claude/cvalda-stage5`; see `notes/stage5.md`. Not pushed. Stage 6 (re-joining at tile edges) not started.
+- Stage 4 (three modes): released (PR #2 merged); Pages checked (`notes/reachability.md`). Stage 5 (export in GeoJSON and FlatGeobuf, collapsible panel): released (PR #3 merged); Pages checked (`notes/reachability.md`). Stage 6 (re-joining at tile edges) not started; branch `claude/cvalda-stage6` is ready.
 - cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu
