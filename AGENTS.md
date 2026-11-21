@@ -37,6 +37,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 - MapLibre v6 worker is inlined as a blob and passed to `setWorkerUrl` (D2). Own workers: `?worker&inline` (D3, D10).
 - Fusion: per-building covered share, exact clipping, in a Worker; threshold is a page filter, default 0.5 (D9, `notes/stage3.md`).
 - GSI aerial photo toggle, translucent fills (D11).
+- Three modes with origin colours (D14, D15).
 - No building layer below map zoom 15, because koicha `BldA` is thinned at z13–14 (D13; hfu decided). URL position: `hash: 'map'`.
 - `import * as maplibregl from 'maplibre-gl'` (no default export in v6).
 - LICENSE (CC0) pre-existed; hfu confirmed on 2026-11-21 that CC0 for the site content is intended (D5).
@@ -56,7 +57,8 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 
 ## Status
 
-- Stages 1–3: done (hfu reviewed the look; threshold default 0.5 accepted by implication, not stated). See `notes/stage3.md`. Release 1 (PR from `claude/cvalda-startup-9e46f6` into `main`) is waiting for hfu to merge; Pages (`main:/docs`) is already enabled. After the merge: check the Pages URL, CORS from the Pages origin, and the `#map=` link. Stages 4–6 not started.
+- Stages 1–3 released: PR #1 merged; Pages live at `https://dwg7.unopengis.org/cvalda/` and checked (`notes/reachability.md`).
+- Stage 4 (three modes): implemented and checked locally on branch `claude/cvalda-stage4`; see `notes/stage4.md`. Not pushed. Waiting for hfu's review. Stages 5–6 not started.
 - cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu

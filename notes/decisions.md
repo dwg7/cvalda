@@ -60,3 +60,11 @@ The Overture additions are a GeoJSON source. A hidden vector source shows no att
 - First step: Overture additions and the "all Overture outlines" toggle start at zoom 15.
 - **hfu decided (2026-11-21): hide the official buildings below 15 as well.** No building layer (official, Overture, additions) is drawn below map zoom 15; the status line says "Zoom in to level 15 or more to see buildings." The thinned z13–14 official data stays unused.
 - URL: `hash: 'map'` replaces the custom `lon/lat/z` parameters. Format: `#map=zoom/lat/lng`. Without a hash the map starts at Niseko station, zoom 16. Checked: the hash follows panning and the place buttons.
+
+## D14: Three modes, origin colours (2026-11-21)
+
+Mode 1 official + Overture where official has none (default), mode 2 overlay as published, mode 3 Overture + official where Overture has none. Official blue, Overture orange (Okabe-Ito); the overlap in mode 2 is the darker blend of the two translucent fills, not a third hue. Details and what is unchecked: `stage4.md`. The same slider threshold (default 50%) serves modes 1 and 3.
+
+## D15: Mode 3 uses the same coverage function with the roles swapped (2026-11-21)
+
+Official pieces versus all Overture buildings of the z14 ancestor. Official pieces cut at tile edges are judged separately. Measured on two blocks (`stage4.md`).

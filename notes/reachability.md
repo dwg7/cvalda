@@ -22,3 +22,12 @@ Added 2026-11-21 (stage 3):
 | Host / URL | Result |
 |---|---|
 | `https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg` (z16, z18 tiles near Niseko) | 200, `image/jpeg`, `access-control-allow-origin: *`; also loaded in the page |
+
+## After release 1 (checked 2026-11-21, once PR #1 was merged)
+
+- Pages build for `main` (commit d940a36): status `built`. The earlier `errored` status on the Pages record was from the build before `docs/` existed.
+- `http://dwg7.unopengis.org/cvalda/` and `https://dwg7.unopengis.org/cvalda/`: 200, 1,829,124 bytes, byte-identical to `docs/index.html`; no external `<script src>` or stylesheet link. `cache-control: max-age=600`.
+- Opened in the Browser pane at `https://dwg7.unopengis.org/cvalda/#map=16/42.8035/140.6797`: the hash was kept, the status line showed 239 Overture buildings in view and 207 added, 88 official and 165 added features rendered, no console errors.
+- From the page origin `https://dwg7.unopengis.org`, `fetch` returned 200 for: the koicha TileJSON and a koicha z16 tile, an Overture z14 tile, the published style, and a seamlessphoto tile. So **CORS works from the Pages origin** for all four hosts' resources used.
+- The Browser pane was in the background, so `requestAnimationFrame` was stalled (`map.loaded()` stayed false). The data and rendered-feature counts above come from queries, not from looking at the screen. A look at the live page by hfu is still worth doing.
+- The HTTPS certificate covers `dwg7.unopengis.org` (approved, expires 2027-02-03, from the Pages API). `https_enforced` is false.
