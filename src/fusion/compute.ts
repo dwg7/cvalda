@@ -19,6 +19,15 @@ export interface TileResult {
   candidates: number;
   /** Buildings dropped because coverage ≥ KEEP_BELOW. */
   dropped: number;
+  /**
+   * The other direction (for the "Overture first" mode): official building pieces of this tile that
+   * Overture covers by less than KEEP_BELOW, as GeoJSON with `cov` = share covered by Overture.
+   */
+  officialOnly: GeoJSON.Feature[];
+  /** Official building pieces in this tile (a building cut by the tile edge counts once per tile). */
+  officialPieces: number;
+  /** Official pieces dropped because Overture covers ≥ KEEP_BELOW of them. */
+  officialDropped: number;
   /** Buildings whose geometry could not be processed (kept with cov = 0). */
   failed: number;
   officialCount: number;
@@ -49,7 +58,10 @@ export const computeTile = async (x: number, y: number, src: Sources): Promise<T
     const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
     return cx >= x && cx < x + 1 && cy >= y && cy < y + 1;
   });
-  const base: Omit<TileResult, 'ms'> = { x, y, features: [], candidates: mine.length, dropped: 0, failed: 0, officialCount: 0 };
+  const base: Omit<TileResult, 'ms'> = {
+    x, y, features: [], candidates: mine.length, dropped: 0, failed: 0, officialCount: 0,
+    officialOnly: [], officialPieces: 0, officialDropped: 0,
+  };
   if (mine.length > MAX_FEATURES_PER_TILE) return { ...base, skipped: 'too-many', ms: Date.now() - t0 };
 
   // Official buildings of this tile and its 8 neighbours (buildings can cross tile edges).
@@ -68,6 +80,21 @@ export const computeTile = async (x: number, y: number, src: Sources): Promise<T
       geometry: b.polys.length === 1
         ? { type: 'Polygon', coordinates: toLonLat(b.polys[0]) }
         : { type: 'MultiPolygon', coordinates: b.polys.map(toLonLat) },
+    });
+  }
+
+  // Other direction: which official pieces of this tile does Overture not cover?
+  // Overture side = every building of the z14 ancestor (its buffer holds buildings across the tile edge).
+  const ovIndex: Indexed[] = index(ov.flatMap((b) => b.polys));
+  const ownOfficial = await src.official(x, y);
+  base.officialPieces = ownOfficial.length;
+  for (const p of ownOfficial) {
+    const cov = coveredShare([p], ovIndex);
+    if (cov !== null && cov >= KEEP_BELOW) { base.officialDropped++; continue; }
+    base.officialOnly.push({
+      type: 'Feature',
+      properties: { cov: cov === null ? 0 : Math.round(cov * 1000) / 1000 },
+      geometry: { type: 'Polygon', coordinates: toLonLat(p) },
     });
   }
   return { ...base, ms: Date.now() - t0 };

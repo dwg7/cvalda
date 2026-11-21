@@ -2,7 +2,7 @@
 
 A map viewer for Hokkaido. It shows buildings from the GSI vector tiles, and adds buildings from Overture Maps where the GSI data has none.
 
-Status: early. The page adds Overture buildings that the GSI data does not cover. You choose how much overlap counts as "covered" with a slider. Export is not built yet.
+Status: early. The page has three modes: GSI buildings plus the Overture buildings GSI lacks, both sources overlaid, or Overture buildings plus the GSI buildings Overture lacks. A slider sets how much overlap counts as "covered". Export is not built yet.
 
 ## How it works
 

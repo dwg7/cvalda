@@ -15,10 +15,10 @@ const src = {
   official: memo(async (x, y) => { const b = await get(`https://stars.optgeo.org/bvmap-koicha-hokkaido/16/${x}/${y}`); return b ? decodeOfficial(b, x, y) : []; }),
 };
 const [cx, cy] = tileOf(lat, lon, 16);
-const feats = []; let cand = 0, dropped = 0, failed = 0, ms = 0, off = 0;
+const feats = [], offFeats = []; let cand = 0, dropped = 0, failed = 0, ms = 0, off = 0, pieces = 0, offDropped = 0;
 for (let dx = 0; dx < n; dx++) for (let dy = 0; dy < n; dy++) {
   const r = await computeTile(cx + dx, cy + dy, src);
-  feats.push(...r.features); cand += r.candidates; dropped += r.dropped; failed += r.failed; ms += r.ms; off += r.officialCount;
+  feats.push(...r.features); offFeats.push(...r.officialOnly); pieces += r.officialPieces; offDropped += r.officialDropped; cand += r.candidates; dropped += r.dropped; failed += r.failed; ms += r.ms; off += r.officialCount;
 }
 console.log(`# ${lat},${lon} z16 ${cx}/${cy} ${n}x${n} tiles: overture candidates=${cand}, official(3x3 incl.)~${off}, dropped(cov>=0.95)=${dropped}, failed=${failed}, compute ms total=${ms}`);
 const ths = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95];
@@ -26,3 +26,9 @@ const row = {}; for (const t of ths) row[t] = feats.filter((f) => f.properties.c
 console.log('kept (added) when cov < threshold:', JSON.stringify(row));
 const bins = new Array(10).fill(0); for (const f of feats) bins[Math.min(9, Math.floor(f.properties.cov * 10))]++;
 console.log('histogram of cov (0.0-0.1 … 0.9-1.0), excl. >=0.95 dropped:', JSON.stringify(bins));
+
+console.log(`other direction: official pieces=${pieces}, dropped (Overture covers >=0.95)=${offDropped}`);
+const orow = {}; for (const t of ths) orow[t] = offFeats.filter((f) => f.properties.cov < t).length;
+console.log('official kept (added in Overture-first mode) when cov < threshold:', JSON.stringify(orow));
+const obins = new Array(10).fill(0); for (const f of offFeats) obins[Math.min(9, Math.floor(f.properties.cov * 10))]++;
+console.log('histogram of official cov by Overture (excl. >=0.95):', JSON.stringify(obins));

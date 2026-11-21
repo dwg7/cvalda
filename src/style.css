@@ -10,7 +10,10 @@ body { font: 14px/1.4 system-ui, sans-serif; }
 .swatch { width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid; flex: none; }
 .swatch.official { background: #0072b2; border-color: #004b73; }
 .swatch.overture { background: #e69f00; border-color: #8a5f00; }
-.swatch.raw { background: transparent; border-color: #8a5f00; border-style: dashed; }
+.swatch.both { background: #86a89d; border-color: #4f6b62; } /* official 45% over Overture 45% over white, as drawn */
+#legend { margin: 6px 0; padding-top: 6px; border-top: 1px solid #bbb; }
+#legend .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+#modes label { align-items: flex-start; }
 .slider { margin: 8px 0 2px; }
 .slider label { display: block; margin: 0 0 2px; }
 .slider input { width: 100%; }
@@ -23,7 +26,10 @@ body { font: 14px/1.4 system-ui, sans-serif; }
   .panel { background: rgba(32, 32, 36, 0.94); color: #eee; }
   .panel button { background: #333; color: #eee; border-color: #777; }
   .panel button:hover { background: #444; }
-  .swatch.raw { background: transparent; border-color: #8a5f00; border-style: dashed; }
+  .swatch.both { background: #86a89d; border-color: #4f6b62; } /* official 45% over Overture 45% over white, as drawn */
+#legend { margin: 6px 0; padding-top: 6px; border-top: 1px solid #bbb; }
+#legend .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+#modes label { align-items: flex-start; }
 .slider { margin: 8px 0 2px; }
 .slider label { display: block; margin: 0 0 2px; }
 .slider input { width: 100%; }
