@@ -15,10 +15,9 @@ maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([workerSource], { type: 'te
 const STYLE_URL = 'https://stars.optgeo.org/style/bvmap-koicha-starlight';
 const OVERTURE_URL = 'https://stars.optgeo.org/overture_buildings';
 const PHOTO_URL = 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg';
-const MIN_ZOOM = 13; // koicha BldA starts at tile zoom 13 (TileJSON)
 // Below 15 the official BldA is thinned (z13/z14 hold about 15–20% of the area of z16; z15 equals z16,
-// see notes/p0-measurements.md). Overture additions are drawn and computed only from 15, so that a
-// shallow view never shows Overture buildings next to an incomplete official layer.
+// see notes/p0-measurements.md). No building layer is drawn below 15 (D13), so a shallow view never
+// shows a thinned official layer, or Overture buildings next to it.
 const COMPUTE_MIN_ZOOM = 15;
 const MAX_VIEW_TILES = 48; // z16 tiles per view; above this we ask the reader to zoom in
 const MAX_RESULT_TILES = 240; // computed tiles kept in memory
@@ -48,9 +47,9 @@ async function buildStyle(): Promise<maplibregl.StyleSpecification> {
       paint: { 'fill-color': OVERTURE.fill, 'fill-opacity': FILL_OPACITY } },
     { id: 'cvalda-added-line', type: 'line', source: 'added', minzoom: COMPUTE_MIN_ZOOM, filter: ['<', ['get', 'cov'], 0.5],
       paint: { 'line-color': OVERTURE.line, 'line-width': 0.8 } },
-    { id: 'cvalda-official-fill', type: 'fill', source: sourceId, 'source-layer': 'BldA', minzoom: MIN_ZOOM,
+    { id: 'cvalda-official-fill', type: 'fill', source: sourceId, 'source-layer': 'BldA', minzoom: COMPUTE_MIN_ZOOM,
       paint: { 'fill-color': OFFICIAL.fill, 'fill-opacity': FILL_OPACITY } },
-    { id: 'cvalda-official-line', type: 'line', source: sourceId, 'source-layer': 'BldA', minzoom: MIN_ZOOM,
+    { id: 'cvalda-official-line', type: 'line', source: sourceId, 'source-layer': 'BldA', minzoom: COMPUTE_MIN_ZOOM,
       paint: { 'line-color': OFFICIAL.line, 'line-width': 0.8 } },
     { id: 'cvalda-raw-line', type: 'line', source: 'overture', 'source-layer': 'building', minzoom: COMPUTE_MIN_ZOOM,
       layout: { visibility: 'none' }, paint: { 'line-color': OVERTURE.line, 'line-width': 1, 'line-dasharray': [2, 2] } },
@@ -145,8 +144,7 @@ const lat2y = (lat: number) => {
 
 const statusEl = document.getElementById('status')!;
 function showStatus() {
-  if (map.getZoom() < MIN_ZOOM) { statusEl.textContent = `Zoom in to level ${MIN_ZOOM} or more to see buildings.`; return; }
-  if (map.getZoom() < COMPUTE_MIN_ZOOM) { statusEl.textContent = `Official buildings are thinned at this zoom. Zoom in to level ${COMPUTE_MIN_ZOOM} or more to add Overture buildings.`; return; }
+  if (map.getZoom() < COMPUTE_MIN_ZOOM) { statusEl.textContent = `Zoom in to level ${COMPUTE_MIN_ZOOM} or more to see buildings.`; return; }
   if (lastNote) { statusEl.textContent = lastNote; return; }
   let done = 0, cand = 0, dropped = 0, kept = 0, skipped = 0;
   for (const k of viewKeys) {

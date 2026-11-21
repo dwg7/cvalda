@@ -37,7 +37,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 - MapLibre v6 worker is inlined as a blob and passed to `setWorkerUrl` (D2). Own workers: `?worker&inline` (D3, D10).
 - Fusion: per-building covered share, exact clipping, in a Worker; threshold is a page filter, default 0.5 (D9, `notes/stage3.md`).
 - GSI aerial photo toggle, translucent fills (D11).
-- Overture additions only from zoom 15, because koicha `BldA` is thinned at z13–14 (D13). URL position: `hash: 'map'`.
+- No building layer below map zoom 15, because koicha `BldA` is thinned at z13–14 (D13; hfu decided). URL position: `hash: 'map'`.
 - `import * as maplibregl from 'maplibre-gl'` (no default export in v6).
 - LICENSE (CC0) pre-existed; hfu confirmed on 2026-11-21 that CC0 for the site content is intended (D5).
 
@@ -64,7 +64,6 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 1. GSI attribution wording; mixed-export licence notice (`notes/licensing.md`).
 2. GSI aerial photo credit/terms (D11).
 3. Is a default threshold of 0.5 acceptable after you look at Niseko? (`notes/stage3.md`)
-4. Below zoom 15, keep the thinned official buildings, or hide all buildings? (D13)
 
 Decided: Pages URL form is `dwg7.unopengis.org/<repo>/` (D8).
 
