@@ -6,7 +6,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import workerSource from 'maplibre-gl/dist/maplibre-gl-worker.mjs?raw';
 import FusionWorker from './fusion.worker.ts?worker&inline';
 import type { Request, Response } from './fusion.worker';
-import { KEEP_BELOW, MAX_FEATURES_PER_TILE, Z_COMPUTE, type TileResult } from './fusion/compute';
+import { KEEP_BELOW, MAX_FEATURES_PER_TILE, Z_COMPUTE, type ExportTile, type TileResult } from './fusion/compute';
+import { build, download, EXPORT_MAX_FEATURES, select, type Format } from './export';
 import './style.css';
 
 maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([workerSource], { type: 'text/javascript' })));
@@ -36,9 +37,13 @@ const PLACES: Record<string, [number, number, number]> = {
 type Layer = maplibregl.LayerSpecification;
 const isBuilding = (l: Layer) => 'source-layer' in l && l['source-layer'] === 'BldA';
 
+let gsiCredit = '国土地理院最適化ベクトルタイルを加工して作成'; // replaced by the style's own text below
+
 async function buildStyle(): Promise<maplibregl.StyleSpecification> {
   const style = (await (await fetch(STYLE_URL)).json()) as maplibregl.StyleSpecification;
   const sourceId = Object.keys(style.sources)[0];
+  const own = (style.sources[sourceId] as { attribution?: string }).attribution;
+  if (own) gsiCredit = own;
   const at = style.layers.findIndex(isBuilding);
   const rest = style.layers.filter((l) => !isBuilding(l));
   const fill = (id: string, source: string, color: string, extra: object = {}): Layer =>
@@ -161,22 +166,32 @@ thrInput.addEventListener('input', applyThreshold);
 const worker = new FusionWorker();
 const results = new Map<string, TileResult>(); // insertion order = age
 const pending = new Map<number, string>();
-const failed = new Set<string>();
+const failed = new Map<string, number>(); // tile → number of failed attempts
+const MAX_ATTEMPTS = 3;
 let seq = 0;
 let viewKeys: string[] = [];
 let lastNote = '';
 
 const key = (x: number, y: number) => `${x}/${y}`;
+const exportWaiters = new Map<number, { ok: (t: ExportTile) => void; fail: (m: string) => void }>();
 worker.onmessage = (e: MessageEvent<Response>) => {
-  const { id, result, error } = e.data;
+  const { id, result, error, exported } = e.data;
+  const w = exportWaiters.get(id);
+  if (w) {
+    exportWaiters.delete(id);
+    if (exported) w.ok(exported); else w.fail(error ?? 'failed');
+    return;
+  }
   const k = pending.get(id)!;
   pending.delete(id);
   if (result) {
     results.set(k, result);
     while (results.size > MAX_RESULT_TILES) results.delete(results.keys().next().value as string);
   } else {
-    failed.add(k);
-    console.warn('tile failed', k, error);
+    const n = (failed.get(k) ?? 0) + 1;
+    failed.set(k, n);
+    console.warn('tile failed', k, `attempt ${n}`, error);
+    if (n < MAX_ATTEMPTS) window.setTimeout(updateTiles, 1500 * n); // try again; the cause is often a passing network error
   }
   scheduleRefresh();
 };
@@ -215,7 +230,8 @@ function showStatus() {
     for (const f of r.features) if ((f.properties as { cov: number }).cov < threshold) n.kept++;
     for (const f of r.officialOnly) if ((f.properties as { cov: number }).cov < threshold) n.pKept++;
   }
-  const busy = viewKeys.length - done - [...viewKeys].filter((k) => failed.has(k)).length;
+  const lost = viewKeys.filter((k) => !results.has(k) && (failed.get(k) ?? 0) >= MAX_ATTEMPTS).length;
+  const busy = viewKeys.length - done - lost;
   const pct = Math.round(KEEP_BELOW * 100);
   statusEl.textContent =
     `${busy > 0 ? `Computing… ${done}/${viewKeys.length} tiles. ` : ''}` +
@@ -223,13 +239,13 @@ function showStatus() {
       ? `Overture buildings in view: ${n.cand}. Added: ${n.kept}. Not added because official covers ${pct}% or more: ${n.dropped}.`
       : `GSI building pieces in view: ${n.pieces}. Added: ${n.pKept}. Not added because Overture covers ${pct}% or more: ${n.pDropped}.`) +
     (skipped ? ` ${skipped} tile(s) skipped: more than ${MAX_FEATURES_PER_TILE} buildings.` : '') +
-    (failed.size ? ` ${failed.size} tile(s) failed to load.` : '');
+    (lost ? ` ${lost} tile(s) failed to load. Pan the map to try again.` : '');
 }
 
 function updateTiles() {
   lastNote = '';
   viewKeys = [];
-  if (map.getZoom() < COMPUTE_MIN_ZOOM || !MODES[mode].compute) { showStatus(); return; }
+  if (map.getZoom() < COMPUTE_MIN_ZOOM) { showStatus(); return; }
   const b = map.getBounds();
   const x0 = lon2x(b.getWest()), x1 = lon2x(b.getEast()), y0 = lat2y(b.getNorth()), y1 = lat2y(b.getSouth());
   const n = (x1 - x0 + 1) * (y1 - y0 + 1);
@@ -240,7 +256,8 @@ function updateTiles() {
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) {
     const k = key(x, y);
     viewKeys.push(k);
-    if (!results.has(k) && !failed.has(k) && ![...pending.values()].includes(k)) todo.push([x, y]);
+    // The overlay mode needs no computation, but the tile list is still the unit of export.
+    if (MODES[mode].compute && !results.has(k) && (failed.get(k) ?? 0) < MAX_ATTEMPTS && ![...pending.values()].includes(k)) todo.push([x, y]);
   }
   todo.sort((a, b2) => Math.hypot(a[0] + 0.5 - cx, a[1] + 0.5 - cy) - Math.hypot(b2[0] + 0.5 - cx, b2[1] + 0.5 - cy));
   for (const [x, y] of todo) {
@@ -250,8 +267,10 @@ function updateTiles() {
   }
   showStatus();
 }
-map.on('moveend', updateTiles);
-map.on('zoomend', updateTiles);
+// A new view by the reader gives lost tiles a fresh set of attempts.
+const onView = () => { for (const [k, n] of failed) if (n >= MAX_ATTEMPTS) failed.delete(k); updateTiles(); };
+map.on('moveend', onView);
+map.on('zoomend', onView);
 // Layer properties can be set only after the style has loaded.
 if (map.isStyleLoaded()) setMode(mode); else map.once('style.load', () => setMode(mode));
 
@@ -262,3 +281,82 @@ for (const [name, [lon, lat, z]] of Object.entries(PLACES)) {
   btn.addEventListener('click', () => map.jumpTo({ center: [lon, lat], zoom: z }));
   places.appendChild(btn);
 }
+
+// ---------- panel: hide / show ----------
+const panel = document.getElementById('panel')!;
+const toggle = document.getElementById('panel-toggle')!;
+const store = {
+  get: () => { try { return localStorage.getItem('cvalda-panel'); } catch { return null; } },
+  set: (v: string) => { try { localStorage.setItem('cvalda-panel', v); } catch { /* storage can be blocked */ } },
+};
+const setCollapsed = (c: boolean) => {
+  panel.classList.toggle('collapsed', c);
+  toggle.textContent = c ? 'Show' : 'Hide';
+  toggle.setAttribute('aria-expanded', String(!c));
+};
+// Start hidden on a narrow screen unless the reader chose otherwise before.
+setCollapsed(store.get() ? store.get() === 'collapsed' : window.innerWidth < 600);
+toggle.addEventListener('click', () => {
+  const c = !panel.classList.contains('collapsed');
+  setCollapsed(c);
+  store.set(c ? 'collapsed' : 'open');
+});
+
+// ---------- export ----------
+const exportStatus = document.getElementById('export-status')!;
+const exportButtons = [document.getElementById('x-geojson') as HTMLButtonElement, document.getElementById('x-fgb') as HTMLButtonElement];
+const exportable = () => map.getZoom() >= COMPUTE_MIN_ZOOM && viewKeys.length > 0 && !lastNote;
+const refreshExport = () => {
+  const ok = exportable();
+  for (const b of exportButtons) b.disabled = !ok;
+  if (!ok && !exportBusy) exportStatus.textContent = map.getZoom() < COMPUTE_MIN_ZOOM
+    ? `Zoom in to level ${COMPUTE_MIN_ZOOM} or more to export.`
+    : lastNote || 'Waiting for the tiles of this view.';
+};
+let exportBusy = false;
+map.on('moveend', refreshExport);
+map.on('zoomend', refreshExport);
+setInterval(refreshExport, 1000);
+
+const lonOf = (x: number) => (x / 2 ** Z_COMPUTE) * 360 - 180;
+const latOf = (y: number) => (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / 2 ** Z_COMPUTE))) * 180) / Math.PI;
+
+async function runExport(format: Format) {
+  if (!exportable() || exportBusy) return;
+  exportBusy = true;
+  for (const b of exportButtons) b.disabled = true;
+  try {
+    const keys = [...viewKeys];
+    exportStatus.textContent = `Preparing ${keys.length} tiles…`;
+    const tiles = await Promise.all(keys.map((k) => new Promise<ExportTile>((ok, fail) => {
+      const [x, y] = k.split('/').map(Number);
+      const id = ++seq;
+      exportWaiters.set(id, { ok, fail: (m) => fail(new Error(`${k}: ${m}`)) });
+      worker.postMessage({ id, x, y, export: true } satisfies Request);
+    })));
+    const skipped = tiles.filter((t) => t.skipped).length;
+    const features = select(mode, threshold, tiles);
+    if (features.length > EXPORT_MAX_FEATURES) {
+      exportStatus.textContent = `This view holds ${features.length} features. The limit is ${EXPORT_MAX_FEATURES}. Zoom in and try again.`;
+      return;
+    }
+    const xs = keys.map((k) => Number(k.split('/')[0])), ys = keys.map((k) => Number(k.split('/')[1]));
+    const c = map.getCenter();
+    const { blob, ext } = build(features, {
+      mode, threshold: MODES[mode].threshold ? threshold : null, zoom: Math.round(map.getZoom() * 100) / 100,
+      center: [Math.round(c.lng * 1e5) / 1e5, Math.round(c.lat * 1e5) / 1e5], tiles: keys.length,
+      bbox: [lonOf(Math.min(...xs)), latOf(Math.max(...ys) + 1), lonOf(Math.max(...xs) + 1), latOf(Math.min(...ys))],
+    }, gsiCredit, format);
+    const nOff = features.filter((f) => (f.properties as { source: string }).source === 'official').length;
+    download(blob, `cvalda-${mode}-${c.lat.toFixed(4)}-${c.lng.toFixed(4)}.${ext}`);
+    exportStatus.textContent = `Saved ${features.length} features (${nOff} GSI, ${features.length - nOff} Overture; ${(blob.size / 1024).toFixed(0)} KB).` +
+      (skipped ? ` ${skipped} tile(s) were skipped: more than ${MAX_FEATURES_PER_TILE} buildings.` : '');
+  } catch (err) {
+    exportStatus.textContent = `Export failed: ${err instanceof Error ? err.message : String(err)}`;
+  } finally {
+    exportBusy = false;
+    refreshExport();
+  }
+}
+exportButtons[0].addEventListener('click', () => runExport('geojson'));
+exportButtons[1].addEventListener('click', () => runExport('flatgeobuf'));

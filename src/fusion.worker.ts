@@ -1,5 +1,5 @@
 // Computes, per z16 tile, which share of each Overture building is covered by official buildings.
-import { computeTile, Z_COMPUTE, Z_OVERTURE, type Sources, type TileResult } from './fusion/compute';
+import { computeTile, exportTile, Z_COMPUTE, Z_OVERTURE, type ExportTile, type Sources, type TileResult } from './fusion/compute';
 import { decodeOfficial, decodeOverture, type OvertureBuilding } from './fusion/decode';
 import type { Poly } from './fusion/geom';
 
@@ -43,12 +43,16 @@ const sources: Sources = {
   }),
 };
 
-export type Request = { id: number; x: number; y: number };
-export type Response = { id: number; result?: TileResult; error?: string };
+export type Request = { id: number; x: number; y: number; export?: boolean };
+export type Response = { id: number; result?: TileResult; exported?: ExportTile; error?: string };
 
 self.onmessage = async (e: MessageEvent<Request>) => {
   const { id, x, y } = e.data;
   try {
+    if (e.data.export) {
+      (self as unknown as Worker).postMessage({ id, exported: await exportTile(x, y, sources) } satisfies Response);
+      return;
+    }
     const result = await computeTile(x, y, sources);
     (self as unknown as Worker).postMessage({ id, result } satisfies Response);
   } catch (err) {

@@ -7,8 +7,23 @@ import { classifyRings, type Poly, type Ring } from './geom';
 export interface OvertureBuilding {
   id: string;
   height?: number;
+  /** Compact provenance, e.g. "OpenStreetMap (ODbL-1.0)", taken from the Overture `sources` property. */
+  datasets: string;
   polys: Poly[];
 }
+
+const provenance = (sources: unknown): string => {
+  if (typeof sources !== 'string') return '';
+  try {
+    const seen = new Set<string>();
+    for (const s of JSON.parse(sources) as { dataset?: string; license?: string }[]) {
+      seen.add(`${s.dataset ?? '?'}${s.license ? ` (${s.license})` : ''}`);
+    }
+    return [...seen].join('; ');
+  } catch {
+    return '';
+  }
+};
 
 export const decodeOverture = (buf: ArrayBuffer, tx: number, ty: number): OvertureBuilding[] => {
   const layer = new VectorTile(new PbfReader(new Uint8Array(buf))).layers.building;
@@ -21,7 +36,7 @@ export const decodeOverture = (buf: ArrayBuffer, tx: number, ty: number): Overtu
     const polys = classifyRings(rings);
     if (polys.length === 0) continue;
     const h = f.properties.height;
-    out.push({ id: String(f.properties.id ?? ''), height: typeof h === 'number' ? h : undefined, polys });
+    out.push({ id: String(f.properties.id ?? ''), height: typeof h === 'number' ? h : undefined, datasets: provenance(f.properties.sources), polys });
   }
   return out;
 };

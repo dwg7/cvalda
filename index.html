@@ -7,8 +7,12 @@
   </head>
   <body>
     <div id="map"></div>
-    <div class="panel">
-      <h1>cvalda</h1>
+    <div class="panel" id="panel">
+      <div class="panel-head">
+        <h1>cvalda</h1>
+        <button id="panel-toggle" type="button" aria-expanded="true" aria-controls="panel-body" title="Hide or show this panel">Hide</button>
+      </div>
+      <div id="panel-body">
       <div id="modes"></div>
       <div id="legend"></div>
       <label><input type="checkbox" id="t-photo" />GSI aerial photo</label>
@@ -18,6 +22,15 @@
       </div>
       <p class="hint" id="status"></p>
       <div class="places" id="places"></div>
+      <div class="export">
+        <div class="export-title">Export what you see</div>
+        <div class="export-buttons">
+          <button id="x-geojson" type="button">GeoJSON</button>
+          <button id="x-fgb" type="button">FlatGeobuf</button>
+        </div>
+        <p class="hint" id="export-status">Zoom in to level 15 or more to export.</p>
+      </div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

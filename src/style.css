@@ -5,7 +5,16 @@ body { font: 14px/1.4 system-ui, sans-serif; }
   background: rgba(255, 255, 255, 0.94); color: #1a1a1a; border-radius: 6px;
   padding: 10px 12px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
-.panel h1 { font-size: 15px; margin: 0 0 6px; }
+.panel h1 { font-size: 15px; margin: 0; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.panel.collapsed { padding: 6px 8px; }
+.panel.collapsed .panel-head { margin-bottom: 0; }
+.panel.collapsed #panel-body { display: none; }
+.panel { max-height: calc(100% - 20px); overflow: auto; box-sizing: border-box; }
+.export { margin-top: 10px; padding-top: 8px; border-top: 1px solid #bbb; }
+.export-title { font-weight: 600; margin-bottom: 4px; }
+.export-buttons { display: flex; gap: 6px; }
+.panel button:disabled { opacity: 0.5; cursor: default; }
 .panel label { display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; }
 .swatch { width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid; flex: none; }
 .swatch.official { background: #0072b2; border-color: #004b73; }

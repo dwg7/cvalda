@@ -68,3 +68,15 @@ Mode 1 official + Overture where official has none (default), mode 2 overlay as 
 ## D15: Mode 3 uses the same coverage function with the roles swapped (2026-11-21)
 
 Official pieces versus all Overture buildings of the z14 ancestor. Official pieces cut at tile edges are judged separately. Measured on two blocks (`stage4.md`).
+
+## D16: Export = what the mode shows, for the tiles that cover the view (2026-11-21)
+
+See `stage5.md`. GeoJSON first, FlatGeobuf second (`flatgeobuf` 4.6.1, BSD-3-Clause). Per feature: `source`, Overture `id`, `datasets`, `covered_share`. Limit 100,000 features. The export reuses the Worker's caches; nothing is sent anywhere.
+
+## D17: Credits in exports (2026-11-21)
+
+GeoJSON: file-level `attribution`, `note`, `parameters`. FlatGeobuf: per-feature `credit` column. Wording still to be confirmed by hfu (`licensing.md`). Overture's own `sources` (dataset and licence) are kept per building as `datasets`.
+
+## D18: Collapsible panel (2026-11-21)
+
+Hide/Show button; state in `localStorage`; starts hidden below 600 px width unless the reader chose before.
