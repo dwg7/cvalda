@@ -50,7 +50,8 @@ export const build = (features: GeoJSON.Feature[], params: ExportParams, gsiCred
     attribution: [gsiCredit, OVERTURE_CREDIT],
     note:
       'Made in the browser by cvalda (https://dwg7.unopengis.org/cvalda/) from the map tiles that cover the view. ' +
-      'Features with source "official" are GSI buildings and are cut at z16 tile edges. ' +
+      'Features with source "official" are GSI buildings; parts that the map tiles cut at tile edges are fused, so a building appears once. ' +
+      'Features with source "overture" are fused in the same way across Overture tile edges. ' +
       'Features with source "overture" keep their Overture id; "datasets" names the data and licence recorded by Overture for each. ' +
       '"covered_share" is the share of the building covered by the other source.',
     parameters: params,

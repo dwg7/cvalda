@@ -38,6 +38,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 - Fusion: per-building covered share, exact clipping, in a Worker; threshold is a page filter, default 0.5 (D9, `notes/stage3.md`).
 - GSI aerial photo toggle, translucent fills (D11).
 - Three modes with origin colours (D14, D15).
+- Tile edges: koicha and Overture tiles have buffers; buildings are fused and emitted once (D19).
 - Export (D16, D17): GeoJSON and FlatGeobuf of the tiles in view; collapsible panel (D18).
 - No building layer below map zoom 15, because koicha `BldA` is thinned at z13–14 (D13; hfu decided). URL position: `hash: 'map'`.
 - `import * as maplibregl from 'maplibre-gl'` (no default export in v6).
@@ -59,7 +60,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Status
 
 - Stages 1–3 released: PR #1 merged; Pages live at `https://dwg7.unopengis.org/cvalda/` and checked (`notes/reachability.md`).
-- Stage 4 (three modes): released (PR #2 merged); Pages checked (`notes/reachability.md`). Stage 5 (export in GeoJSON and FlatGeobuf, collapsible panel): released (PR #3 merged); Pages checked (`notes/reachability.md`). Stage 6 (re-joining at tile edges) not started; branch `claude/cvalda-stage6` is ready.
+- Stage 4 (three modes): released (PR #2 merged); Pages checked (`notes/reachability.md`). Stage 5 (export in GeoJSON and FlatGeobuf, collapsible panel): released (PR #3 merged); Pages checked (`notes/reachability.md`). Stage 6 (fusing buildings at tile edges, D19) implemented and checked locally on branch `claude/cvalda-stage6`; see `notes/stage6.md`. It also corrects a defect of the released stages 3–5 (buildings counted twice near tile edges). Not pushed.
 - cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu

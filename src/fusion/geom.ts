@@ -72,3 +72,21 @@ export const coveredShare = (target: Poly[], others: Indexed[]): number | null =
   }
   return total > 0 ? Math.min(1, inside / total) : null;
 };
+
+/** Union of polygons (overlapping or touching ones fuse). Returns the result as polygons. */
+export const unionPolys = (polys: Poly[]): Poly[] => {
+  if (polys.length === 1) return polys;
+  const u = polygonClipping.union(polys[0] as never, ...(polys.slice(1) as never[]));
+  return u as unknown as Poly[];
+};
+
+/** Area shared by two polygons (0 when they only touch or when the clipping fails). */
+export const sharedArea = (a: Poly, b: Poly): number => {
+  try {
+    let s = 0;
+    for (const mp of polygonClipping.intersection(a as never, b as never)) s += polyArea(mp as unknown as Poly);
+    return s;
+  } catch {
+    return 0;
+  }
+};
