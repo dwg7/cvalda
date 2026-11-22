@@ -6,7 +6,7 @@ import type { Poly } from './fusion/geom';
 const OVERTURE_URL = 'https://stars.optgeo.org/overture_buildings';
 const OFFICIAL_URL = 'https://stars.optgeo.org/bvmap-koicha-hokkaido';
 // Small caches keep memory low (target: 4 GB Chromebook).
-const OVERTURE_CACHE = 6; // decoded z14 tiles, about 3,500–5,000 buildings each
+const OVERTURE_CACHE = 12; // decoded z14 tiles, about 3,500–5,000 buildings each (a tile on a z14 edge also reads its neighbours)
 const OFFICIAL_CACHE = 160; // decoded z16 tiles
 
 const lru = <T>(limit: number) => {

@@ -237,7 +237,7 @@ function showStatus() {
     `${busy > 0 ? `Computing… ${done}/${viewKeys.length} tiles. ` : ''}` +
     (mode === 'official-first'
       ? `Overture buildings in view: ${n.cand}. Added: ${n.kept}. Not added because official covers ${pct}% or more: ${n.dropped}.`
-      : `GSI building pieces in view: ${n.pieces}. Added: ${n.pKept}. Not added because Overture covers ${pct}% or more: ${n.pDropped}.`) +
+      : `GSI buildings in view: ${n.pieces}. Added: ${n.pKept}. Not added because Overture covers ${pct}% or more: ${n.pDropped}.`) +
     (skipped ? ` ${skipped} tile(s) skipped: more than ${MAX_FEATURES_PER_TILE} buildings.` : '') +
     (lost ? ` ${lost} tile(s) failed to load. Pan the map to try again.` : '');
 }

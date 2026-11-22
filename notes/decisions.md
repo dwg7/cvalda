@@ -80,3 +80,11 @@ GeoJSON: file-level `attribution`, `note`, `parameters`. FlatGeobuf: per-feature
 ## D18: Collapsible panel (2026-11-21)
 
 Hide/Show button; state in `localStorage`; starts hidden below 600 px width unless the reader chose before.
+
+## D19: Buildings at tile edges are fused, once, whole (2026-11-22)
+
+Both the official tiles and the Overture z14 tiles carry buffers, so a building near an edge appears in two tiles, whole or cut. Official: overlapping parts from different tiles are fused; touching alone does not fuse (shared walls stay two). Overture: copies with the same `id` are fused, reading neighbouring z14 tiles when the z16 tile lies on a z14 edge. Each building is emitted by the tile that holds the centre of its box. Details and numbers: `stage6.md`. This corrects D9 (ownership rule, which used one copy) and the exports of D16.
+
+## D20: Corrected earlier notes (2026-11-22)
+
+Stages 4 and 5 notes got a correction box at the top. Released builds (PR #2, #3) carried the defect; the fix is in the stage 6 PR.

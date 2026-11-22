@@ -41,3 +41,12 @@ Added 2026-11-21 (stage 3):
 - Mode 3: "GSI building pieces in view: 391. Added: 314. … covers 95% or more: 7." Same numbers as the local run.
 - Rendered-feature counts differ from the local run (e.g. 58 vs 110 official) because the pane was a different size; the status-line counts, which cover the tiles of the view, match.
 - Not looked at by eye in this check; no screenshot was taken of the live page.
+
+## After release 3 (stage 5, PR #3 merged; checked 2026-11-21)
+
+- Pages build for `main` (commit 7979a71): `built`. `https://dwg7.unopengis.org/cvalda/` returned 200, 1,871,745 bytes, byte-identical to `main:docs/index.html`.
+- Opened in the Browser pane (visible, `requestAnimationFrame` running) at `https://dwg7.unopengis.org/cvalda/#map=17.2/42.804/140.684`; no console errors.
+- Status line: "Overture buildings in view: 576. Added: 481. … 9." (same as local).
+- GeoJSON export (mode 1), click intercepted and the blob read back: 872 features = 391 official + 481 Overture, `attribution` has 2 entries, `parameters.mode` = `official-first`. Same as the local run.
+- Panel Hide/Show: height 540 px → 38 px → back; label follows.
+- Not checked on the live page: FlatGeobuf (checked locally only), modes 2 and 3 export, the real download dialog, QGIS.

@@ -1,5 +1,7 @@
 # Stage 4: three modes and origin colours
 
+> **Correction (2026-11-22, `stage6.md`):** the official counts in this note counted buildings near tile edges twice (the tiles have a buffer). After the fix, official buildings are 12–18% fewer. Numbers below are as measured then.
+
 Date: 2026-11-21. Code: `src/main.ts` (modes), `src/fusion/compute.ts` (other direction), `index.html`, `src/style.css`.
 
 ## The modes

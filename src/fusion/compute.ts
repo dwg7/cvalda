@@ -1,4 +1,4 @@
-import { coveredShare, index, polyBBox, type Indexed, type Poly } from './geom';
+import { coveredShare, index, polyBBox, sharedArea, unionPolys, type BBox, type Indexed, type Poly } from './geom';
 import type { OvertureBuilding } from './decode';
 
 export const Z_COMPUTE = 16; // working zoom: finest zoom of the official data
@@ -20,13 +20,13 @@ export interface TileResult {
   /** Buildings dropped because coverage ≥ KEEP_BELOW. */
   dropped: number;
   /**
-   * The other direction (for the "Overture first" mode): official building pieces of this tile that
+   * The other direction (for the "Overture first" mode): official buildings of this tile that
    * Overture covers by less than KEEP_BELOW, as GeoJSON with `cov` = share covered by Overture.
    */
   officialOnly: GeoJSON.Feature[];
-  /** Official building pieces in this tile (a building cut by the tile edge counts once per tile). */
+  /** Official buildings owned by this tile (parts across tile edges are fused; each building counts once). */
   officialPieces: number;
-  /** Official pieces dropped because Overture covers ≥ KEEP_BELOW of them. */
+  /** Official buildings dropped because Overture covers ≥ KEEP_BELOW of them. */
   officialDropped: number;
   /** Buildings whose geometry could not be processed (kept with cov = 0). */
   failed: number;
@@ -44,20 +44,52 @@ export interface Sources {
   official(x: number, y: number): Promise<Poly[]>;
 }
 
+
+const scaleBuilding = (b: OvertureBuilding): OvertureBuilding => ({
+  ...b,
+  polys: b.polys.map((p) => p.map((r) => r.map(([a, c]) => [a * SCALE, c * SCALE] as [number, number]))),
+});
+
+const centreIn = (b: OvertureBuilding, x: number, y: number) => {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const p of b.polys) {
+    const bb = polyBBox(p);
+    x0 = Math.min(x0, bb[0]); y0 = Math.min(y0, bb[1]); x1 = Math.max(x1, bb[2]); y1 = Math.max(y1, bb[3]);
+  }
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  return cx >= x && cx < x + 1 && cy >= y && cy < y + 1;
+};
+
+/**
+ * Overture buildings around z16 tile (x, y), in "world z16" units.
+ * A building near a z14 tile edge sits in both z14 tiles, and each copy is cut at the far end of its
+ * tile's buffer (measured: 40–60% of the copies differ, notes/stage6.md). For a z16 tile on the edge of
+ * its z14 tile, the neighbouring z14 tiles are read as well and copies with the same id are fused.
+ * `mine` = the buildings whose box centre lies in this tile, so each building has one owner.
+ */
+const overtureAround = async (x: number, y: number, src: Sources) => {
+  const ax = x >> 2, ay = y >> 2;
+  const dxs = [0, ...(x % 4 === 0 ? [-1] : []), ...(x % 4 === 3 ? [1] : [])];
+  const dys = [0, ...(y % 4 === 0 ? [-1] : []), ...(y % 4 === 3 ? [1] : [])];
+  const offsets = dxs.flatMap((dx) => dys.map((dy) => [dx, dy] as const)).filter(([dx, dy]) => dx !== 0 || dy !== 0);
+  const [base, ...others] = await Promise.all([src.overture(ax, ay), ...offsets.map(([dx, dy]) => src.overture(ax + dx, ay + dy))]);
+  const copies = new Map<string, OvertureBuilding[]>();
+  for (const list of others) for (const b of list) if (b.id) copies.set(b.id, [...(copies.get(b.id) ?? []), b]);
+  let fused = 0;
+  const all = base.map((b) => {
+    const more = b.id ? copies.get(b.id) : undefined;
+    if (!more) return scaleBuilding(b);
+    fused++;
+    let polys: Poly[];
+    try { polys = unionPolys([...b.polys, ...more.flatMap((m) => m.polys)]); } catch { polys = b.polys; }
+    return scaleBuilding({ ...b, polys });
+  });
+  return { all, mine: all.filter((b) => centreIn(b, x, y)), fused };
+};
+
 export const computeTile = async (x: number, y: number, src: Sources): Promise<TileResult> => {
   const t0 = Date.now();
-  // Overture world z14 → world z16
-  const ov = (await src.overture(x >> 2, y >> 2)).map((b) => ({ ...b, polys: b.polys.map((p) => p.map((r) => r.map(([a, b2]) => [a * SCALE, b2 * SCALE] as [number, number]))) }));
-  // A building belongs to the z16 tile that holds the centre of its bounding box.
-  const mine = ov.filter((b) => {
-    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    for (const p of b.polys) {
-      const bb = polyBBox(p);
-      x0 = Math.min(x0, bb[0]); y0 = Math.min(y0, bb[1]); x1 = Math.max(x1, bb[2]); y1 = Math.max(y1, bb[3]);
-    }
-    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-    return cx >= x && cx < x + 1 && cy >= y && cy < y + 1;
-  });
+  const { all: ov, mine } = await overtureAround(x, y, src);
   const base: Omit<TileResult, 'ms'> = {
     x, y, features: [], candidates: mine.length, dropped: 0, failed: 0, officialCount: 0,
     officialOnly: [], officialPieces: 0, officialDropped: 0,
@@ -86,7 +118,7 @@ export const computeTile = async (x: number, y: number, src: Sources): Promise<T
   // Other direction: which official pieces of this tile does Overture not cover?
   // Overture side = every building of the z14 ancestor (its buffer holds buildings across the tile edge).
   const ovIndex: Indexed[] = index(ov.flatMap((b) => b.polys));
-  const ownOfficial = await src.official(x, y);
+  const ownOfficial = await joinedOfficial(x, y, src);
   base.officialPieces = ownOfficial.length;
   for (const p of ownOfficial) {
     const cov = coveredShare([p], ovIndex);
@@ -106,23 +138,14 @@ export interface ExportTile {
   y: number;
   /** Every Overture building owned by this tile. `covered_share` = share covered by official. */
   overture: GeoJSON.Feature[];
-  /** Every official building piece of this tile. `covered_share` = share covered by Overture. */
+  /** Every official building owned by this tile (fused across tile edges). `covered_share` = share covered by Overture. */
   official: GeoJSON.Feature[];
   skipped?: 'too-many';
 }
 
 /** Same method as computeTile, but nothing is dropped. Used only when the reader exports. */
 export const exportTile = async (x: number, y: number, src: Sources): Promise<ExportTile> => {
-  const ov = (await src.overture(x >> 2, y >> 2)).map((b) => ({ ...b, polys: b.polys.map((p) => p.map((r) => r.map(([a, b2]) => [a * SCALE, b2 * SCALE] as [number, number]))) }));
-  const mine = ov.filter((b) => {
-    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    for (const p of b.polys) {
-      const bb = polyBBox(p);
-      x0 = Math.min(x0, bb[0]); y0 = Math.min(y0, bb[1]); x1 = Math.max(x1, bb[2]); y1 = Math.max(y1, bb[3]);
-    }
-    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-    return cx >= x && cx < x + 1 && cy >= y && cy < y + 1;
-  });
+  const { all: ov, mine } = await overtureAround(x, y, src);
   const out: ExportTile = { x, y, overture: [], official: [] };
   if (mine.length > MAX_FEATURES_PER_TILE) return { ...out, skipped: 'too-many' };
   const tiles: Promise<Poly[]>[] = [];
@@ -137,12 +160,65 @@ export const exportTile = async (x: number, y: number, src: Sources): Promise<Ex
     });
   }
   const ovIdx: Indexed[] = index(ov.flatMap((b) => b.polys));
-  for (const p of await src.official(x, y)) {
+  for (const p of await joinedOfficial(x, y, src)) {
     out.official.push({
       type: 'Feature',
       properties: { source: 'official', covered_share: round(coveredShare([p], ovIdx)) },
       geometry: { type: 'Polygon', coordinates: toLonLat(p) },
     });
+  }
+  return out;
+};
+
+
+/**
+ * The koicha tiles carry a buffer: a building near a z16 tile edge sits in both tiles, either whole
+ * (identical copies) or as two overlapping parts, each cut at the far end of its tile's buffer.
+ * Measured: the buffer is 160 of 8192 units = 0.0195 tile (notes/stage6.md).
+ */
+const BUFFER = 0.02;
+/** Overlap, in tile² units, above which parts from two tiles count as one building (touching is not enough). */
+const SAME_BUILDING_AREA = 1e-9;
+
+const nearEdge = (bb: BBox, x: number, y: number) =>
+  bb[0] < x + BUFFER || bb[2] > x + 1 - BUFFER || bb[1] < y + BUFFER || bb[3] > y + 1 - BUFFER;
+
+/**
+ * Official buildings of tile (x, y), each building exactly once and whole: parts from neighbouring
+ * tiles that overlap are fused, and a building belongs to the tile that holds the centre of its box.
+ * Two buildings that merely touch (shared wall) stay two. A building wider than the 3×3 block around
+ * the tile can still come out in parts (none found so far).
+ */
+export const joinedOfficial = async (x: number, y: number, src: Sources): Promise<Poly[]> => {
+  const out: Poly[] = [];
+  const cand: { poly: Poly; bb: BBox; tile: number }[] = [];
+  let t = 0;
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++, t++) {
+    for (const poly of await src.official(x + dx, y + dy)) {
+      const bb = polyBBox(poly);
+      if (nearEdge(bb, x + dx, y + dy)) {
+        if (bb[2] > x - 0.05 && bb[0] < x + 1.05 && bb[3] > y - 0.05 && bb[1] < y + 1.05) cand.push({ poly, bb, tile: t });
+      } else if (dx === 0 && dy === 0) out.push(poly); // an interior building of this tile: nothing to join
+    }
+  }
+  // group parts of different tiles that overlap
+  const parent = cand.map((_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  for (let i = 0; i < cand.length; i++) for (let j = i + 1; j < cand.length; j++) {
+    if (cand[i].tile === cand[j].tile) continue;
+    const a = cand[i].bb, b = cand[j].bb;
+    if (a[0] > b[2] || b[0] > a[2] || a[1] > b[3] || b[1] > a[3]) continue;
+    if (sharedArea(cand[i].poly, cand[j].poly) > SAME_BUILDING_AREA) parent[find(i)] = find(j);
+  }
+  const groups = new Map<number, number[]>();
+  cand.forEach((_, i) => { const r = find(i); groups.set(r, [...(groups.get(r) ?? []), i]); });
+  for (const members of groups.values()) {
+    let polys: Poly[];
+    try { polys = unionPolys(members.map((i) => cand[i].poly)); } catch { polys = members.map((i) => cand[i].poly); }
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const p of polys) { const bb = polyBBox(p); x0 = Math.min(x0, bb[0]); y0 = Math.min(y0, bb[1]); x1 = Math.max(x1, bb[2]); y1 = Math.max(y1, bb[3]); }
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    if (cx >= x && cx < x + 1 && cy >= y && cy < y + 1) out.push(...polys);
   }
   return out;
 };

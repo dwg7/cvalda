@@ -38,6 +38,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 - Fusion: per-building covered share, exact clipping, in a Worker; threshold is a page filter, default 0.5 (D9, `notes/stage3.md`).
 - GSI aerial photo toggle, translucent fills (D11).
 - Three modes with origin colours (D14, D15).
+- Tile edges: koicha and Overture tiles have buffers; buildings are fused and emitted once (D19).
 - Export (D16, D17): GeoJSON and FlatGeobuf of the tiles in view; collapsible panel (D18).
 - No building layer below map zoom 15, because koicha `BldA` is thinned at z13–14 (D13; hfu decided). URL position: `hash: 'map'`.
 - `import * as maplibregl from 'maplibre-gl'` (no default export in v6).
@@ -46,7 +47,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Data (measured 2026-11-21; see `notes/p0-measurements.md`)
 
 - Base: `https://stars.optgeo.org/bvmap-koicha-hokkaido`: MLT, z4–16, `BldA` z13–16, extent 8192, fields `vt_code`, `vt_lvorder`.
-- Supplement: `https://stars.optgeo.org/overture_buildings`: MVT, **maxzoom 14** (z15+ is 404), layer `building`, extent 4096, has `id`, `height`, `sources`. Tiles have a buffer and the same `id` appears in neighbouring tiles. The code does not dedupe by `id`: a z16 tile owns the buildings whose bounding-box centre lies in it (D9, `notes/stage3.md`).
+- Supplement: `https://stars.optgeo.org/overture_buildings`: MVT, **maxzoom 14** (z15+ is 404), layer `building`, extent 4096, has `id`, `height`, `sources`. Tiles have a buffer and the same `id` appears in neighbouring tiles, often cut differently. The code fuses copies with the same `id` (reading neighbouring z14 tiles when a z16 tile is on a z14 edge), and a z16 tile owns the buildings whose bounding-box centre lies in it (D9, D19, `notes/stage6.md`).
 - Reference: `https://stars.optgeo.org/bvmap` (MVT, whole Japan), GSI pmtiles.
 - At z16, koicha `BldA` equals official `BldA` in all tiles tested (21 tiles, 5 places).
 - stars caches 4 hours. CORS reflects `Origin`.
@@ -59,7 +60,7 @@ Measurement scripts (not part of the build): `scripts/*.mjs`. Run with
 ## Status
 
 - Stages 1–3 released: PR #1 merged; Pages live at `https://dwg7.unopengis.org/cvalda/` and checked (`notes/reachability.md`).
-- Stage 4 (three modes): released (PR #2 merged); Pages checked (`notes/reachability.md`). Stage 5 (export in GeoJSON and FlatGeobuf, collapsible panel): implemented and checked locally on branch `claude/cvalda-stage5`; see `notes/stage5.md`. Not pushed. Stage 6 (re-joining at tile edges) not started.
+- Stage 4 (three modes): released (PR #2 merged); Pages checked (`notes/reachability.md`). Stage 5 (export in GeoJSON and FlatGeobuf, collapsible panel): released (PR #3 merged); Pages checked (`notes/reachability.md`). Stage 6 (fusing buildings at tile edges, D19) implemented and checked locally on branch `claude/cvalda-stage6`; see `notes/stage6.md`. It also corrects a defect of the released stages 3–5 (buildings counted twice near tile edges). Pushed; PR pending.
 - cafebabe was consulted on 2026-11-21 (reply recorded in D2/D3). `guide`: not reachable (a cloud agent, per hfu). hfu asked for a light review of `github.com/dwg7/guide` instead; done in `notes/guide-review.md`. The onboarding questions in that note are still unasked.
 
 ## Open questions for hfu

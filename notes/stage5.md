@@ -1,5 +1,7 @@
 # Stage 5: export from the tiles in view (and a collapsible panel)
 
+> **Correction (2026-11-22, `stage6.md`):** the exports described here could hold a building twice near tile edges (official: whole or partial copies from the tile buffer; Overture: copies cut at z14 edges). Stage 6 fuses them. "Known limits" below is superseded. Counts below are as measured then.
+
 Date: 2026-11-21. Code: `src/export.ts`, `exportTile` in `src/fusion/compute.ts`, export message in `src/fusion.worker.ts`, UI in `src/main.ts` and `index.html`.
 
 ## What the reader gets
